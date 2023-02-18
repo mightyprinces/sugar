@@ -14,40 +14,40 @@
         function Until(fn) {
             this.thenCallbacks = [];
             this.catchCallbacks = [];
+            this.state = undefined;
             this.result = undefined;
-            this.args = undefined;
 
-            fn((...args) => {
-                if (this.result === undefined) {
-                    this.args = args;
-                    this.result = true;
+            fn((result) => {
+                if (this.state === undefined) {
+                    this.result = result;
+                    this.state = true;
                     for (let callback of this.thenCallbacks) {
-                        callback(...this.args);
+                        callback(this.result);
                     }
                 }
-            }, (...args) => {
-                if (this.result === undefined) {
-                    this.args = args;
-                    this.result = false;
+            }, (result) => {
+                if (this.state === undefined) {
+                    this.result = result;
+                    this.state = false;
                     for (let callback of this.catchCallbacks) {
-                        callback(...this.args);
+                        callback(this.result);
                     }
                 }
             });
         }
         Until.prototype.then = function(callback) {
-            if (this.result === undefined) {
+            if (this.state === undefined) {
                 this.thenCallbacks.push(callback);
-            } else if (this.result === true) {
-                callback(...this.args);
+            } else if (this.state === true) {
+                callback(this.result);
             }
             return this;
         }
         Until.prototype.catch = function(callback) {
-            if (this.result === undefined) {
+            if (this.state === undefined) {
                 this.catchCallbacks.push(callback);
-            } else if (this.result === false) {
-                callback(...this.args);
+            } else if (this.state === false) {
+                callback(this.result);
             }
             return this;
         }
