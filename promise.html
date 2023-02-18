@@ -18,16 +18,20 @@
             this.args = undefined;
 
             fn((...args) => {
-                this.args = args;
-                this.result = true;
-                for (let callback of this.thenCallbacks) {
-                    callback(...this.args);
+                if (this.result === undefined) {
+                    this.args = args;
+                    this.result = true;
+                    for (let callback of this.thenCallbacks) {
+                        callback(...this.args);
+                    }
                 }
             }, (...args) => {
-                this.args = args;
-                this.result = false;
-                for (let callback of this.catchCallbacks) {
-                    callback(...this.args);
+                if (this.result === undefined) {
+                    this.args = args;
+                    this.result = false;
+                    for (let callback of this.catchCallbacks) {
+                        callback(...this.args);
+                    }
                 }
             });
         }
