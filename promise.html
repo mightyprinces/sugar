@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promise</title>
+</head>
+<body>
+    <script>
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+
+        // promise simple polyfill
+        function Until(fn) {
+            this.thenCallbacks = [];
+            this.catchCallbacks = [];
+            this.result = undefined;
+            this.args = undefined;
+
+            fn((...args) => {
+                this.args = args;
+                this.result = true;
+                for (let callback of this.thenCallbacks) {
+                    callback(...this.args);
+                }
+            }, (...args) => {
+                this.args = args;
+                this.result = false;
+                for (let callback of this.catchCallbacks) {
+                    callback(...this.args);
+                }
+            });
+        }
+        Until.prototype.then = function(callback) {
+            if (this.result === undefined) {
+                this.thenCallbacks.push(callback);
+            } else if (this.result === true) {
+                callback(...this.args);
+            }
+            return this;
+        }
+        Until.prototype.catch = function(callback) {
+            if (this.result === undefined) {
+                this.catchCallbacks.push(callback);
+            } else if (this.result === false) {
+                callback(...this.args);
+            }
+            return this;
+        }
+
+        function preloadUrl(src) {
+            return new Until(function(resolve, reject) {
+                const img = new Image();
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        // using simple promise polyfill
+        preloadUrl('https://images.unsplash.com/photo-1508739773434-c26b3d09e071')
+            .then((ev) => {
+                console.log('Loaded!', ev.timeStamp);
+            })
+            .catch(() => {
+                console.log('Failed!');
+            });
+
+        // using native promise
+        fetch('/promise.html')
+            .then((data) => {
+                data.text().then((html) => {
+                    console.log('Loaded!', html.length);
+                })
+            })
+            .catch(() => {
+                console.log('Failed!');
+            });
+
+    </script>
+</body>
+</html>
