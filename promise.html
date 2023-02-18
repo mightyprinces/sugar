@@ -35,11 +35,14 @@
                 }
             });
         }
-        Until.prototype.then = function(callback) {
+        Until.prototype.then = function(callback, failCallback) {
             if (this.state === undefined) {
                 this.thenCallbacks.push(callback);
             } else if (this.state === true) {
                 callback(this.result);
+            }
+            if (failCallback !== undefined) {
+                this.catch(failCallback);
             }
             return this;
         }
